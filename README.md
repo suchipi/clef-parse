@@ -42,10 +42,10 @@ console.log(result2);
 //   positionalArgs: []
 // }
 
-// Valid hints are Number, Boolean, String, or Path. Number, Boolean, and String are the standard JS globals, but Path is the class from the npm package "nice-path", which is re-exported by clef-parse:
-import { Path } from "clef-parse";
+// Valid hints are Number, Boolean, String, Path, arrayOfNumbers, arrayOfBooleans, arrayOfStrings, or arrayOfPaths. Number, Boolean, and String are the standard JS globals, but the others are exported by clef-parse:
+import { Path, arrayOfStrings /*, arrayOfNumbers, ... */ } from "clef-parse";
 
-// When you provide the Path hint, clef-parse will interpret the input string as a path (relative to cwd unless it's absolute), and return a `Path` object. It will always be an absolute path.
+// When you provide the Path hint, clef-parse will interpret the input string as a path (relative to cwd unless it's absolute), and return a `Path` object (from the npm package "nice-path"). It will always be an absolute path.
 const result3 = parseArgv(
   ["--bundle", "--input", "index.js", "--output", "bundle.js", "-v"],
   {
@@ -85,6 +85,18 @@ console.log(result3);
 //     v: true
 //   },
 //   positionalArgs: []
+// }
+
+// When you provide an arrayOf* hint, all invocations of the flag will be gathered into an array (ie. repeated invocations are allowed):
+const result4 = parseArgv(
+  ["--include", "something", "--include", "something_else"],
+  { include: arrayOfStrings },
+);
+console.log(result4);
+// Logs:
+// {
+//   options: { include: [ 'something', 'something_else' ] },
+//   positionalArgs: [],
 // }
 
 // If you don't provide hints, clef-parse will do its best to guess.

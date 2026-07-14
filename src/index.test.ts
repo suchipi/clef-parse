@@ -1,5 +1,12 @@
 import { test, expect } from "vitest";
-import { parseArgv, Path } from "./index";
+import {
+  parseArgv,
+  Path,
+  arrayOfStrings,
+  arrayOfPaths,
+  arrayOfNumbers,
+  arrayOfBooleans,
+} from "./index";
 
 test("basic test", () => {
   const result = parseArgv(["-v", "--some-flag", "52", "potato", "--", "--hi"]);
@@ -84,7 +91,7 @@ test("boolean hint", () => {
 test("number hint", () => {
   const result = parseArgv(
     ["--some-num", "500", "--another-num", "this is a string tho"],
-    { someNum: Number, anotherNum: Number }
+    { someNum: Number, anotherNum: Number },
   );
 
   expect(result).toMatchInlineSnapshot(`
@@ -209,7 +216,7 @@ test("path hint (./)", () => {
       "./blah",
     ],
     { firstThing: String, secondThing: Path },
-    { getCwd: () => "/some/fake/path" }
+    { getCwd: () => "/some/fake/path" },
   );
 
   expect(result).toMatchInlineSnapshot(`
@@ -258,7 +265,7 @@ test("path hint (../)", () => {
       "../blah",
     ],
     { firstThing: String, secondThing: Path },
-    { getCwd: () => "/some/fake/path" }
+    { getCwd: () => "/some/fake/path" },
   );
 
   expect(result).toMatchInlineSnapshot(`
@@ -306,7 +313,7 @@ test("path hint (unqualified input)", () => {
       "blah",
     ],
     { firstThing: String, secondThing: Path },
-    { getCwd: () => "/some/fake/path" }
+    { getCwd: () => "/some/fake/path" },
   );
 
   expect(result).toMatchInlineSnapshot(`
@@ -355,7 +362,7 @@ test("relative path without hint specified", () => {
       "../blah",
     ],
     {},
-    { getCwd: () => "/some/fake/path" }
+    { getCwd: () => "/some/fake/path" },
   );
 
   // You can only make a path via hint.
@@ -485,6 +492,96 @@ test("example: ffmpeg argv", () => {
       "positionalArgs": [
         "demo_out.mp4",
       ],
+    }
+  `);
+});
+
+test("repeated flag with arrayOfStrings hint vs String hint", () => {
+  const result = parseArgv(
+    [
+      "--blah",
+      "one",
+      "--blah",
+      "two",
+      "--other-blah",
+      "three",
+      "--other-blah",
+      "four",
+    ],
+    { blah: String, otherBlah: arrayOfStrings },
+  );
+
+  expect(result).toMatchInlineSnapshot(`
+    {
+      "metadata": {
+        "guesses": {},
+        "hints": {
+          "blah": "string",
+          "otherBlah": "array of strings",
+        },
+        "keys": {
+          "--blah": "blah",
+          "--other-blah": "otherBlah",
+        },
+      },
+      "options": {
+        "blah": "two",
+        "otherBlah": [
+          "three",
+          "four",
+        ],
+      },
+      "positionalArgs": [],
+    }
+  `);
+});
+
+test("arrayOfStrings hint with only one value is still an array", () => {
+  const result = parseArgv(["--blah", "one"], { blah: arrayOfStrings });
+
+  expect(result).toMatchInlineSnapshot(`
+    {
+      "metadata": {
+        "guesses": {},
+        "hints": {
+          "blah": "array of strings",
+        },
+        "keys": {
+          "--blah": "blah",
+        },
+      },
+      "options": {
+        "blah": [
+          "one",
+        ],
+      },
+      "positionalArgs": [],
+    }
+  `);
+});
+
+test("repeated flag without hint gets guessed as array", () => {
+  const result = parseArgv(["--blah", "one", "--blah", "two", "--blah=three"]);
+
+  expect(result).toMatchInlineSnapshot(`
+    {
+      "metadata": {
+        "guesses": {
+          "blah": "array of strings",
+        },
+        "hints": {},
+        "keys": {
+          "--blah": "blah",
+        },
+      },
+      "options": {
+        "blah": [
+          "one",
+          "two",
+          "three",
+        ],
+      },
+      "positionalArgs": [],
     }
   `);
 });

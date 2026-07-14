@@ -1,13 +1,20 @@
 #!/usr/bin/env node
-import { parseArgv, Path } from "./index";
+import {
+  parseArgv,
+  Path,
+  arrayOfBooleans,
+  arrayOfNumbers,
+  arrayOfPaths,
+  arrayOfStrings,
+} from "./index";
 import { convertToCamelCase } from "./convert-case";
 
 const envVarNames = Object.keys(process.env);
 const clefParseEnvVarNames = envVarNames.filter((name) =>
-  name.startsWith("CLEF_PARSE_")
+  name.startsWith("CLEF_PARSE_"),
 );
 const clefParseEnvVars = Object.fromEntries(
-  clefParseEnvVarNames.map((name) => [name, process.env[name]])
+  clefParseEnvVarNames.map((name) => [name, process.env[name]]),
 );
 
 const offset = Number(clefParseEnvVars.CLEF_PARSE_ARGV_OFFSET || "2");
@@ -17,6 +24,10 @@ const possibleHintValues = {
   String,
   Number,
   Path,
+  arrayOfStrings,
+  arrayOfBooleans,
+  arrayOfNumbers,
+  arrayOfPaths,
 };
 
 const hints = {};
@@ -28,7 +39,7 @@ for (const [name, value] of Object.entries(clefParseEnvVars)) {
   const hintValue = possibleHintValues[value || ""];
   if (hintValue == null) {
     throw new Error(
-      `Invalid hint specified by env var '${name}'. Valid values are "Boolean", "String", "Number", or "Path", but received: ${value}.`
+      `Invalid hint specified by env var '${name}'. Valid values are "Boolean", "String", "Number", "Path", "arrayOfStrings", "arrayOfBooleans", "arrayOfNumbers", or "arrayOfPaths", but received: ${value}.`,
     );
   }
 
