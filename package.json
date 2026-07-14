@@ -23,15 +23,15 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^24.0.10",
-    "prettier": "^3.6.2",
-    "typescript": "^5.8.3",
-    "vitest": "^3.2.4"
+    "prettier": "^3.9.5",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/suchipi/clef-parse.git"
   },
   "dependencies": {
-    "nice-path": "^3.0.0"
+    "nice-path": "^3.2.2"
   }
 }
