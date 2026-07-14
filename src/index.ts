@@ -83,90 +83,91 @@ export function parseArgv(
       continue;
     }
 
+    if (isAfterDoubleDash) {
+      positionalArgs.push(item);
+      continue;
+    }
+
     if (item.startsWith("-")) {
-      if (isAfterDoubleDash) {
-        positionalArgs.push(item);
+      let propertyName: string;
+      let rightHandValue: string | undefined;
+      let valueComesFromNextArg: boolean;
+
+      if (/=/.test(item)) {
+        let equalsOffset = item.indexOf("=");
+        const before = item.slice(0, equalsOffset);
+        const after = item.slice(equalsOffset + 1);
+        propertyName = convertToCamelCase(before);
+        metadata.keys[before] = propertyName;
+        rightHandValue = after;
+        valueComesFromNextArg = false;
       } else {
-        let propertyName: string;
-        let rightHandValue: string | undefined;
-        let valueComesFromNextArg: boolean;
+        propertyName = convertToCamelCase(item);
+        metadata.keys[item] = propertyName;
+        rightHandValue = argv[0];
+        valueComesFromNextArg = true;
+      }
 
-        if (/=/.test(item)) {
-          let equalsOffset = item.indexOf("=");
-          const before = item.slice(0, equalsOffset);
-          const after = item.slice(equalsOffset + 1);
-          propertyName = convertToCamelCase(before);
-          metadata.keys[before] = propertyName;
-          rightHandValue = after;
-          valueComesFromNextArg = false;
-        } else {
-          propertyName = convertToCamelCase(item);
-          metadata.keys[item] = propertyName;
-          rightHandValue = argv[0];
-          valueComesFromNextArg = true;
-        }
+      let propertyValue: string | number | boolean | Path;
+      let propertyHint = hints[propertyName];
 
-        let propertyValue: string | number | boolean | Path;
-        let propertyHint = hints[propertyName];
+      if (propertyHint == null) {
+        propertyHint = bestGuess(rightHandValue);
+        metadata.guesses[propertyName] = hintToString(propertyHint);
+      } else {
+        metadata.hints[propertyName] = hintToString(propertyHint);
+      }
 
-        if (propertyHint == null) {
-          propertyHint = bestGuess(rightHandValue);
-          metadata.guesses[propertyName] = hintToString(propertyHint);
-        } else {
-          metadata.hints[propertyName] = hintToString(propertyHint);
-        }
-
-        switch (propertyHint) {
-          case Boolean: {
-            if (rightHandValue === "false") {
+      switch (propertyHint) {
+        case Boolean: {
+          if (rightHandValue === "false") {
+            if (valueComesFromNextArg) {
+              argv.shift();
+            }
+            propertyValue = false;
+          } else {
+            if (rightHandValue === "true") {
               if (valueComesFromNextArg) {
                 argv.shift();
               }
-              propertyValue = false;
-            } else {
-              if (rightHandValue === "true") {
-                if (valueComesFromNextArg) {
-                  argv.shift();
-                }
-              }
-              propertyValue = true;
             }
-            break;
+            propertyValue = true;
           }
-
-          case Number: {
-            if (valueComesFromNextArg) {
-              argv.shift();
-            }
-            propertyValue = Number(rightHandValue);
-            break;
-          }
-
-          case String: {
-            if (valueComesFromNextArg) {
-              argv.shift();
-            }
-            propertyValue = rightHandValue;
-            break;
-          }
-
-          case Path: {
-            if (valueComesFromNextArg) {
-              argv.shift();
-            }
-            propertyValue = isAbsolute(rightHandValue)
-              ? new Path(rightHandValue)
-              : new Path(resolvePath(getCwd(), rightHandValue));
-            break;
-          }
-
-          default: {
-            throw new Error(`Invalid option hint: ${propertyHint}`);
-          }
+          break;
         }
 
-        options[propertyName] = propertyValue;
+        case Number: {
+          if (valueComesFromNextArg) {
+            argv.shift();
+          }
+          propertyValue = Number(rightHandValue);
+          break;
+        }
+
+        case String: {
+          if (valueComesFromNextArg) {
+            argv.shift();
+          }
+          propertyValue = rightHandValue;
+          break;
+        }
+
+        case Path: {
+          if (valueComesFromNextArg) {
+            argv.shift();
+          }
+          propertyValue = isAbsolute(rightHandValue)
+            ? new Path(rightHandValue)
+            : new Path(resolvePath(getCwd(), rightHandValue));
+          break;
+        }
+
+        default: {
+          throw new Error(`Invalid option hint: ${propertyHint}`);
+        }
       }
+
+      options[propertyName] = propertyValue;
     } else {
       positionalArgs.push(item);
     }
