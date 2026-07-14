@@ -94,6 +94,8 @@ See the TypeScript types in the source code for more information.
 
 ### As a CLI tool
 
+When used as a CLI tool, clef-parse prints a JSON object with the result of parsing the argv it received:
+
 ```sh
 $ npm install -g clef-parse
 $ clef-parse one two --three-four=five
