@@ -585,3 +585,227 @@ test("repeated flag without hint gets guessed as array", () => {
     }
   `);
 });
+
+test("lowerCamelCase flag", () => {
+  const result = parseArgv(
+    [
+      "--firstThing",
+      "blah",
+      "--second-thing",
+      "./blah",
+      "--third-thing",
+      "../blah",
+    ],
+    {},
+    { getCwd: () => "/some/fake/path" },
+  );
+
+  expect(result).toMatchInlineSnapshot(`
+    {
+      "metadata": {
+        "guesses": {
+          "firstThing": "string",
+          "secondThing": "string",
+          "thirdThing": "string",
+        },
+        "hints": {},
+        "keys": {
+          "--firstThing": "firstThing",
+          "--second-thing": "secondThing",
+          "--third-thing": "thirdThing",
+        },
+      },
+      "options": {
+        "firstThing": "blah",
+        "secondThing": "./blah",
+        "thirdThing": "../blah",
+      },
+      "positionalArgs": [],
+    }
+  `);
+});
+
+test("flags containing acronyms", () => {
+  const result = parseArgv([
+    "--HTTPServer",
+    "localhost",
+    "--someURLPath",
+    "/api",
+    "--fooBARBaz",
+    "qux",
+    "--ABC",
+    "xyz",
+  ]);
+
+  expect(result).toMatchInlineSnapshot(`
+    {
+      "metadata": {
+        "guesses": {
+          "abc": "string",
+          "fooBarBaz": "string",
+          "httpServer": "string",
+          "someUrlPath": "string",
+        },
+        "hints": {},
+        "keys": {
+          "--ABC": "abc",
+          "--HTTPServer": "httpServer",
+          "--fooBARBaz": "fooBarBaz",
+          "--someURLPath": "someUrlPath",
+        },
+      },
+      "options": {
+        "abc": "xyz",
+        "fooBarBaz": "qux",
+        "httpServer": "localhost",
+        "someUrlPath": "/api",
+      },
+      "positionalArgs": [],
+    }
+  `);
+});
+
+test("PascalCase flag", () => {
+  const result = parseArgv(["--PascalCaseFlag", "blah"]);
+
+  expect(result).toMatchInlineSnapshot(`
+    {
+      "metadata": {
+        "guesses": {
+          "pascalCaseFlag": "string",
+        },
+        "hints": {},
+        "keys": {
+          "--PascalCaseFlag": "pascalCaseFlag",
+        },
+      },
+      "options": {
+        "pascalCaseFlag": "blah",
+      },
+      "positionalArgs": [],
+    }
+  `);
+});
+
+test("SCREAMING_SNAKE_CASE flag", () => {
+  const result = parseArgv(["--SCREAMING_SNAKE_CASE", "blah"]);
+
+  expect(result).toMatchInlineSnapshot(`
+    {
+      "metadata": {
+        "guesses": {
+          "screamingSnakeCase": "string",
+        },
+        "hints": {},
+        "keys": {
+          "--SCREAMING_SNAKE_CASE": "screamingSnakeCase",
+        },
+      },
+      "options": {
+        "screamingSnakeCase": "blah",
+      },
+      "positionalArgs": [],
+    }
+  `);
+});
+
+test("UPPER-KEBAB-CASE flag", () => {
+  const result = parseArgv(["--UPPER-KEBAB-CASE", "blah"]);
+
+  expect(result).toMatchInlineSnapshot(`
+    {
+      "metadata": {
+        "guesses": {
+          "upperKebabCase": "string",
+        },
+        "hints": {},
+        "keys": {
+          "--UPPER-KEBAB-CASE": "upperKebabCase",
+        },
+      },
+      "options": {
+        "upperKebabCase": "blah",
+      },
+      "positionalArgs": [],
+    }
+  `);
+});
+
+test("mixed casing styles in one flag", () => {
+  const result = parseArgv(["--mixed-case_styleHere", "blah"]);
+
+  expect(result).toMatchInlineSnapshot(`
+    {
+      "metadata": {
+        "guesses": {
+          "mixedCaseStyleHere": "string",
+        },
+        "hints": {},
+        "keys": {
+          "--mixed-case_styleHere": "mixedCaseStyleHere",
+        },
+      },
+      "options": {
+        "mixedCaseStyleHere": "blah",
+      },
+      "positionalArgs": [],
+    }
+  `);
+});
+
+test("digits in flags", () => {
+  const result = parseArgv([
+    "--with2Digits",
+    "one",
+    "--flag2",
+    "two",
+    "--2flag",
+    "three",
+  ]);
+
+  expect(result).toMatchInlineSnapshot(`
+    {
+      "metadata": {
+        "guesses": {
+          "2flag": "string",
+          "flag2": "string",
+          "with2Digits": "string",
+        },
+        "hints": {},
+        "keys": {
+          "--2flag": "2flag",
+          "--flag2": "flag2",
+          "--with2Digits": "with2Digits",
+        },
+      },
+      "options": {
+        "2flag": "three",
+        "flag2": "two",
+        "with2Digits": "one",
+      },
+      "positionalArgs": [],
+    }
+  `);
+});
+
+test("single-letter words", () => {
+  const result = parseArgv(["--a-b-c", "blah"]);
+
+  expect(result).toMatchInlineSnapshot(`
+    {
+      "metadata": {
+        "guesses": {
+          "aBC": "string",
+        },
+        "hints": {},
+        "keys": {
+          "--a-b-c": "aBC",
+        },
+      },
+      "options": {
+        "aBC": "blah",
+      },
+      "positionalArgs": [],
+    }
+  `);
+});
