@@ -1,6 +1,6 @@
 {
   "name": "clef-parse",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Simple, lightweight argv parser. Powers the cleffa and clefairy packages",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
